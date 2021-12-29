@@ -1,0 +1,128 @@
+<html>
+  <head>
+    <!-- Pour afficher le Favicon dans les signatures de Metamask -->
+    <link rel="shortcut icon" href="http://127.0.0.1:5500/Demon_Hunter.jpg" />
+    <!-- Moralis SDK code -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+    <!--<script src="main.js"></script>-->
+  </head>
+  <body>
+    <h1>Gas Stats With Moralis3</h1>
+
+    <input type="email" name="" id="email" placeholder="email" />
+    <input type="password" name="" id="password" placeholder="password" />
+    <button id="signup">Sign Up</button>
+
+    <br>
+
+    <input type="text" name="" id="amount" placeholder="amount" />
+    <input type="text" name="" id="destination" placeholder="destination" />
+    <button id="transfer">Sign Up</button>
+
+    <br>
+
+    <button id="login">Login</button>
+    <button id="loginWithMetaMask">Login with MetaMask</button>
+    <button id="logout">Logout</button>
+    <!--<button id="getStats">Refresh Stats</button>-->
+
+    <ul id="gas-stats"></ul>
+
+    <div id="blockNumber"></div>
+
+    <script>
+    const serverUrl = "https://wc9uugow39y5.usemoralis.com:2053/server";
+    const appId = "4iwUPAtQrDYzQcSgpsi89hhNjoXfqY78LRCHlHRw";
+    Moralis.start({ serverUrl, appId });
+    
+//Moralis.initialize(appId);
+//Moralis.serverUrl = serverUrl;
+
+// Connect to Archive, not able to since MikePolygonCoin don't have code ABI
+/*const nodeUrl = "https://speedy-nodes-nyc.moralis.io/5cbbc9f78936ea62d01f0887/polygon/mumbai/archive"; // Polygon TestNet Archive node
+
+let web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
+web3.eth.getBlockNumber()
+    .then(function(blockNumber) {
+        document.getElementById("blockNumber").innerHTML = "Block number: " + blockNumber;
+    });
+
+const CONTRACT_ADDRESS = "0x65be5b2f72edad9076d49191099d66c68ca0bb17"; // MPC : MikePolygonCoin SmartContract Address
+const CONTRACT_ABI = [{"type": "function", "stateMutability": "view","payable": false, 
+    "inputs": [{"type":"address","name":""},{"type":"address","name":""}],
+    "constant": [{"type":"address","name":"src","indexed":true},{"type":"address","name":"dst","indexed":true}]
+}];
+const CONTRACT = new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);*/
+
+init = async () => {
+    //window.web3 = await Moralis.Web3.enable();
+    //const user = await Moralis.User.current();
+    //console.log("logged in user:", user.get("ethAddress"));
+    loginWithMetaMask();
+
+    // get stats on page load
+    //getStats();
+}
+
+// add from here down
+loginWithMetaMask = async () => {
+    let user = Moralis.User.current();
+    if (!user) {
+      user = await Moralis.authenticate({signingMessage:"Vérifier que vous êtes bien le propriétaire de votre wallet"});
+    }
+    console.log("logged in user:", user.get("ethAddress"));
+    //console.log("Polygon Balance:", user.get("polygonAddress"));
+    //getStats();
+}
+
+signup = async (email, password) => {
+    const user = new Moralis.User();
+    user.set("username", email);
+    user.set("password", password);
+    user.set("email", email);
+
+    try {
+    await user.signUp();
+        // Hooray! Let them use the app now.
+        console.log("logged in user:");
+        console.log(user);
+    } catch (error) {
+        // Show the error message somewhere and let the user try again.
+        alert("Error: " + error.code + " " + error.message);
+    }
+}
+
+login = async (email, password) => {
+    try {
+        const user = await Moralis.User.logIn(email, password);
+        // Hooray! Let them use the app now.
+        console.log("logged in user:");
+        console.log(user);
+    } catch (error) {
+        // Show the error message somewhere and let the user try again.
+        alert("Error: " + error.code + " " + error.message);
+    }
+}
+
+transfer = async (amount, destination) => {
+    const MikePolygonCoinContractAddress = "0x65Be5B2F72EDaD9076D49191099d66c68Ca0bb17";
+    const options = {type: "erc20", 
+                 amount: Moralis.Units.Token(amount, "18"), 
+                 receiver: destination,
+                 contractAddress: MikePolygonCoinContractAddress}
+    let result = await Moralis.transfer(options)
+}
+
+logOut = async () =>  { await Moralis.User.logOut(); console.log("Logged out"); }
+
+document.getElementById("signup").onclick = () => signup(document.getElementById("email").value, document.getElementById("password").value);
+document.getElementById("login").onclick = () => login(document.getElementById("email").value, document.getElementById("password").value);
+document.getElementById("transfer").onclick = () => transfer(document.getElementById("amount").value, document.getElementById("destination").value);
+document.getElementById("loginWithMetaMask").onclick = loginWithMetaMask;
+document.getElementById("logout").onclick = logOut;
+//document.getElementById("getStats").onclick = getStats;
+
+init();
+    </script>
+  </body>

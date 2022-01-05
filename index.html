@@ -13,16 +13,15 @@
     <input type="email" name="" id="email" placeholder="email" />
     <input type="password" name="" id="password" placeholder="password" />
     <button id="signup">Sign Up</button>
+    <button id="login">Login</button>
 
     <br>
 
     <input type="text" name="" id="amount" placeholder="amount" />
     <input type="text" name="" id="destination" placeholder="destination" />
-    <button id="transfer">Sign Up</button>
+    <button id="transfer">Transfer</button>
 
     <br>
-
-    <button id="login">Login</button>
     <button id="loginWithMetaMask">Login with MetaMask</button>
     <button id="logout">Logout</button>
     <!--<button id="getStats">Refresh Stats</button>-->
@@ -109,9 +108,20 @@ transfer = async (amount, destination) => {
     const MikePolygonCoinContractAddress = "0x65Be5B2F72EDaD9076D49191099d66c68Ca0bb17";
     const options = {type: "erc20", 
                  amount: Moralis.Units.Token(amount, "18"), 
-                 receiver: destination,
-                 contractAddress: MikePolygonCoinContractAddress}
-    let result = await Moralis.transfer(options)
+                 receiver: destination, // Dev Account 2 : 0x68594255d8CB98F02C7b7E0fE03d0ed3E8c2A535
+                 contractAddress: MikePolygonCoinContractAddress
+                ,awaitReceipt: false // to get event callbacks awaitReceipt = true
+            };
+    //let result = await Moralis.transfer(options);
+    
+    const tx = await Moralis.transfer(options);
+
+    tx.on("transactionHash", (hash) => { console.log("Transaction Hash: "); console.log(hash); })
+        .on("receipt", (receipt) => { console.log("Receipt: "); console.log(receipt); })
+        .on("confirmation", (confirmationNumber, receipt) => { console.log("confirmation: "); console.log(confirmationNumber); console.log(", Receipt: "); console.log(receipt);  })
+        .on("error", (error) => { console.log("Error: "); console.log(error); });
+    /**/
+
 }
 
 logOut = async () =>  { await Moralis.User.logOut(); console.log("Logged out"); }
